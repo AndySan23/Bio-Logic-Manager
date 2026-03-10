@@ -72,33 +72,26 @@ public class Login extends javax.swing.JFrame {
         if (user.equals("") || pass.equals("")) {
             javax.swing.JOptionPane.showMessageDialog(null, "Debes llenar todos los campos.");
         } else {
-            try {
-                java.sql.Connection cn = clases.Conexion.conectar();
-                java.sql.PreparedStatement pst = cn.prepareStatement("select * from usuarios where nombre_usuario = '" + user + "'and password = '" + pass + "'");
-                java.sql.ResultSet rs = pst.executeQuery();
-                if (rs.next()) {
-                    
-                    String nivel = rs.getString("nivel_permiso");
-                    String estatus = rs.getString("estatus");
-                    
-                    if (estatus.equalsIgnoreCase("Activo")) {
-                        javax.swing.JOptionPane.showMessageDialog(null, "¡Bienvenido " + user + "! \nTu rol es : " + nivel);
-                        cn.close();
-                        
-                        this.dispose();
-                        
-                        new Interfaz_Principal().setVisible(true);
-                    } else {
-                        javax.swing.JOptionPane.showMessageDialog(null, "Usuario inactivo. Contacte al Administrador.");
-                    }
-                } else {
-                    javax.swing.JOptionPane.showMessageDialog(null, "Datos de acceso incorrectos.");
-                    txt_user.setText("");
-                    txt_password.setText("");
-                }
-            } catch (java.sql.SQLException e) {
-                System.err.println("Error en el botón de acceso: " + e);
-                javax.swing.JOptionPane.showMessageDialog(null, "Error al iniciar sesión. Contacte al Administrador.");
+            // 1. Instanciamos a nuestro "Traductor" (El Objeto de Acceso a Datos)
+            clases.UsuarioDAO dao = new clases.UsuarioDAO();
+            
+            // 2. Le pedimos al DAO que haga el trabajo sucio en la base de datos
+            // Esta función nos devolverá: El Rol, "INACTIVO", "" (vacio), o "ERROR_BD"
+            String resultado = dao.validarLogin(user, pass);
+            
+            if (resultado.equals("")) {
+                javax.swing.JOptionPane.showMessageDialog(null, "Datos de acceso incorrectos.");
+                txt_user.setText("");
+                txt_password.setText("");
+            } else if (resultado.equals("INACTIVO")) {
+                javax.swing.JOptionPane.showMessageDialog(null, "Usuario inactivo. Contacte al Administrador.");
+            } else if (resultado.equals("ERROR_BD")) {
+                javax.swing.JOptionPane.showMessageDialog(null, "Error al iniciar sesión. Contacte al administrador.");
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(null, "¡Bienvenido " + user + "! \nTu rol es: " + resultado);
+                
+                this.dispose(); // Cerramos el Login
+                new Interfaz_Principal().setVisible(true); // Abrimos el centro de Mando.
             }
         }
     }//GEN-LAST:event_btnAccederActionPerformed
