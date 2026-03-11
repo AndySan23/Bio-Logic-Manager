@@ -10,76 +10,45 @@ public class Interfaz_Principal extends javax.swing.JFrame {
      * Creates new form Interfaz_Principal
      */
     public Interfaz_Principal() {
-        initComponents();
-        
+        initComponents();       
         this.setLocationRelativeTo(null);
-        String nombreUsuario = ventanas.Login.user;
         
+        String nombreUsuario = ventanas.Login.user;        
         lbl_bienvenida.setText("Bienvenid@ " + nombreUsuario + " - Centro de Mando");
         
         try {
-            
             java.sql.Connection cn = clases.Conexion.conectar();
-            
             java.sql.PreparedStatement pst = cn.prepareStatement(
-                    "select nivel_permiso from usuarios where nombre_usuario = '" + ventanas.Login.user + "'"
+                    "select nivel_permiso from usuarios where nombre_usuario = '" + nombreUsuario + "'"
             );
             java.sql.ResultSet rs = pst.executeQuery();
             
             if (rs.next()) {
                 String permiso = rs.getString("nivel_permiso");
-                
                 if (!permiso.equals("Administrador")) {
                     btn_registrarUsuario.setVisible(false);
                     btn_gestionarUsuarios.setVisible(false);
                 }
+                cn.close();
+                
             }
-            cn.close();
-            
         } catch (Exception e) {
             System.err.println("Error en el filtro de seguridad: " + e);
         }
         
-        this.setLocationRelativeTo(null);
-        
         try {
+            clases.PlantaDAO plantaDAO = new clases.PlantaDAO();
             
-            java.sql.Connection cn = clases.Conexion.conectar();
+            int totalPrincipal = plantaDAO.contarPlantasNoArchivadas();
+            int enTratamiento = plantaDAO.contarPlantasEstado("En Tratamiento");
+            int archivadas = plantaDAO.contarPlantasEstado("Archivada");
             
-            java.sql.PreparedStatement pst1 = cn.prepareStatement(
-                    "select count(*) from plantas where estatus != 'Archivada'"
-            );
+            lbl_totalPrincipal.setText(String.valueOf(totalPrincipal));
+            lbl_tratamiento.setText(String.valueOf(enTratamiento));
+            lbl_archivo.setText(String.valueOf(archivadas));
             
-            java.sql.ResultSet rs1 = pst1.executeQuery();
-            
-            if (rs1.next()) {
-                lbl_totalPrincipal.setText(rs1.getString(1));
-            }
-            
-            java.sql.PreparedStatement pst2 = cn.prepareStatement(
-                    "select count(*) from plantas where estatus = 'En Tratamiento'"
-            );
-            
-            java.sql.ResultSet rs2 = pst2.executeQuery();
-            
-            if (rs2.next()) {
-                lbl_tratamiento.setText(rs2.getString(1));
-            }
-            
-            java.sql.PreparedStatement pst3 = cn.prepareStatement(
-                    "select count(*) from plantas where estatus = 'Archivada'"
-            );
-            
-            java.sql.ResultSet rs3 = pst3.executeQuery();
-            
-            if (rs3.next()) {
-                lbl_archivo.setText(rs3.getString(1));
-            }
-            
-            cn.close();
- 
         } catch (Exception e) {
-            System.err.println("Error al cargar el Dashboard: " + e);
+            System.err.println("Error al contactar con PlantaDAO: " + e);
             javax.swing.JOptionPane.showMessageDialog(null, "Error al cargar las estadísticas del sistema.");
         }
     }
