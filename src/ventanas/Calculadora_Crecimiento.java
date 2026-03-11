@@ -104,46 +104,26 @@ public class Calculadora_Crecimiento extends javax.swing.JFrame {
         String strFecha2 = txt_fecha2.getText().trim();
         String strAltura2 = txt_altura2.getText().trim();
         
-        if (strFecha1.isEmpty() || strAltura1.isEmpty()  || strFecha2.isEmpty() || strAltura2.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(null, "Debes llenar todos los campos.");
-        } else {
-            try {
-                
-                double y1 = Double.parseDouble(strAltura1);
-                double y2 = Double.parseDouble(strAltura2);
-                
-                java.time.format.DateTimeFormatter formato = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
-                java.time.LocalDate fecha1 = java.time.LocalDate.parse(strFecha1, formato);
-                java.time.LocalDate fecha2 = java.time.LocalDate.parse(strFecha2, formato);
-                
-                long deltaX = java.time.temporal.ChronoUnit.DAYS.between(fecha1, fecha2);
-                
-                if (deltaX == 0) {
-                    javax.swing.JOptionPane.showMessageDialog(null, "Matemáticamente inválido: Las fechas son iguales (División por cero).");
-                } else if (deltaX < 0) {
-                    javax.swing.JOptionPane.showMessageDialog(null, "Lógica temporal invertida: La fecha #2 debe ser posterior a la fecha #1.");
-                } else {
-                    double deltaY = y2 - y1;
-                    double tasaCrecimiento = deltaY / deltaX;
-                    
-                    String resultadoFormateado = String.format("%.2f", tasaCrecimiento);
-                    lbl_resultado.setText("Tasa de Crecimiento Diario: " + resultadoFormateado);
-                    
-                    if (tasaCrecimiento > 0) {
-                        lbl_resultado.setForeground(new java.awt.Color(0, 153, 0));
-                    } else if (tasaCrecimiento < 0) {
-                        lbl_resultado.setForeground(java.awt.Color.RED);
-                    } else {
-                        lbl_resultado.setForeground(java.awt.Color.BLACK);
-                    }
-                }
-            } catch (NumberFormatException e) {
-                javax.swing.JOptionPane.showMessageDialog(null, "Error de formato: La alturas deben ser números");
-            } catch (java.time.format.DateTimeParseException e) {
-                javax.swing.JOptionPane.showMessageDialog(null, "Error temporal: El formato de fecha debe ser el indicado.");
-            } catch (Exception e) {
-                javax.swing.JOptionPane.showMessageDialog(null, "Error en el cálculo: " + e);
+        try {
+            // Instanciamos nuestro motor matemático
+            clases.MotorMatematico motor = new clases.MotorMatematico();
+            
+            // Le pedimos que calcule y nos devuelva el número crudo
+            double tasaCrecimiento = motor.calcularTasaCrecimiento(strFecha1, strAltura1, strFecha2, strAltura2);
+            
+            // La ventana se encarga exclusivamente de lo visual
+            String resultadoFormateado = String.format("%.2f", tasaCrecimiento);
+            lbl_resultado.setText("Tasa de Crecimiento Diario: " + resultadoFormateado);
+            
+            if (tasaCrecimiento > 0) {
+                lbl_resultado.setForeground(new java.awt.Color(0, 153, 0));
+            } else if (tasaCrecimiento < 0) {
+                lbl_resultado.setForeground(java.awt.Color.RED);
+            } else {
+                lbl_resultado.setForeground(java.awt.Color.BLACK);
             }
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(null, e.getMessage());
         }
     }//GEN-LAST:event_btn_calcularActionPerformed
 
