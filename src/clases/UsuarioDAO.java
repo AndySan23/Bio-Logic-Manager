@@ -45,4 +45,26 @@ public class UsuarioDAO {
         
         return nivelPermiso;
     }
+    
+    public String obtenerNivelPermiso (String username) {
+        String nivelPermiso = "";
+        try {
+            Connection cn = Conexion.conectar();
+            PreparedStatement pst = cn.prepareStatement(
+                    "SELECT nivel_permiso FROM usuarios WHERE nombre_usuario = ?"
+            );
+            
+            pst.setString(1, username);
+            ResultSet rs = pst.executeQuery();
+            
+            if (rs.next()) {
+                nivelPermiso = rs.getString("nivel_permiso");
+            }
+            cn.close();
+            
+        } catch (SQLException e) {
+            System.err.println("Error en obtenerNivelPermiso (UsuarioDAO): " + e);
+        }
+        return nivelPermiso;
+    }
 }

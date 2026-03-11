@@ -17,23 +17,15 @@ public class Interfaz_Principal extends javax.swing.JFrame {
         lbl_bienvenida.setText("Bienvenid@ " + nombreUsuario + " - Centro de Mando");
         
         try {
-            java.sql.Connection cn = clases.Conexion.conectar();
-            java.sql.PreparedStatement pst = cn.prepareStatement(
-                    "select nivel_permiso from usuarios where nombre_usuario = '" + nombreUsuario + "'"
-            );
-            java.sql.ResultSet rs = pst.executeQuery();
+            clases.UsuarioDAO usuarioDAO = new clases.UsuarioDAO();
+            String permiso = usuarioDAO.obtenerNivelPermiso(nombreUsuario);
             
-            if (rs.next()) {
-                String permiso = rs.getString("nivel_permiso");
-                if (!permiso.equals("Administrador")) {
-                    btn_registrarUsuario.setVisible(false);
-                    btn_gestionarUsuarios.setVisible(false);
-                }
-                cn.close();
-                
+            if (!permiso.equals("Administrador")) {
+                btn_registrarUsuario.setVisible(false);
+                btn_gestionarUsuarios.setVisible(false);
             }
         } catch (Exception e) {
-            System.err.println("Error en el filtro de seguridad: " + e);
+            System.err.println("Error al aplicar filtro de seguridad: " + e);
         }
         
         try {
